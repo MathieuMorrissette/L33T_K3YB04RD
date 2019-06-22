@@ -1,2 +1,2 @@
 # L33T_K3YB04RD
-Remote keyboard for Raspberry Pi hardware with Web sockets
+Remote keyboard with websockets
