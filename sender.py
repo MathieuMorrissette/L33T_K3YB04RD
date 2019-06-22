@@ -4,6 +4,9 @@ import keyboard
 
 async def hello():
     async with websockets.connect('ws://localhost:8766') as websocket:
+
+        await websocket.send("CONNECT_SENDER")
+
         while(True):
             key = input("> ")
 

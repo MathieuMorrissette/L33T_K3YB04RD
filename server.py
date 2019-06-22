@@ -1,31 +1,32 @@
 import asyncio
 import websockets
 
-
-connected_clients = []
+# remember sockets or else they get trashed by the GC
+receivers = []
+senders = []
 
 async def hello(websocket, path):
     while(True):
         print("waiting to receive clients")
         client_data = await websocket.recv()
 
-        if(client_data == "CONNECT"):
-            print("registered 1 client")
-            connected_clients.append(websocket)
-            print("total registered : " + str(len(connected_clients)))
+        if(client_data == "CONNECT_RECEIVER"):
+            receivers.append(websocket)
+        elif(client_data == "CONNECT_SENDER"):
+            senders.append(websocket)
         elif(client_data.startswith("KEY|")):
             await broadcast_key(client_data[4:])
 
 
 
 async def broadcast_key(key):
-    for client in connected_clients:            
+    for client in receivers:            
         await client.send(key)
             
         
 
 
-start_server = websockets.serve(hello, 'localhost', 8766)
+start_server = websockets.serve(hello, '192.168.4.148', 8766)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

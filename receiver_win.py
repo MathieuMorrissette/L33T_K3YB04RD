@@ -72,7 +72,7 @@ class AppServerSvc (win32serviceutil.ServiceFramework):
         # SetDesktop("default")
 
         async with websockets.connect('ws://192.168.4.148:8766') as websocket:
-            await websocket.send("CONNECT")
+            await websocket.send("CONNECT_RECEIVER")
 
             while(True):
                 print("waiting for server...")
