@@ -36,8 +36,8 @@ async def main():
 
             if(server.startswith("SCREEN|")):
                 im = pyscreenshot.grab()
-                im.show()
-                await websocket.send("RECEIVER_OUTPUT|" + str(im_2_b64(im))
+                #im.show()
+                await websocket.send("RECEIVER_OUTPUT|" + str(im_2_b64(im)))
 
 
             print("writing : " + server)
