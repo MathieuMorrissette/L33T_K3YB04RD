@@ -18,10 +18,18 @@ async def hello(websocket, path):
             senders.append(websocket)
         try:
             while True:
-                client_data = await websocket.recv()
-                
-                if(client_data.startswith("KEY|")):
-                    await broadcast_key(client_data[4:])
+                try:
+                    print("waiting to receive data...")
+                    client_data = await websocket.recv()
+                    print("received data : " + client_data)
+
+                    if(client_data.startswith("KEY|")):
+                        key = client_data[4:]
+                        print("sending " + key)
+                        await broadcast_key(key)
+                        print("done sending")
+                except Exception as e:
+                    print(str(e))
 
         except Exception as e:
             print(str(e))
@@ -36,7 +44,7 @@ async def hello(websocket, path):
 
 
 async def broadcast_key(key):
-    for client in receivers:            
+    for client in receivers:       
         await client.send(key)
             
         
