@@ -22,11 +22,11 @@ async def hello(websocket, path):
                 client_data = await websocket.recv()
                 print("received data : " + client_data)
 
-                if(client_data.startswith("KEY|")):
-                    key = client_data[4:]
-                    print("sending " + key)
-                    await broadcast_key(key)
-                    print("done sending")
+                if(client_data.startswith("RECEIVER_OUTPUT|")):
+                    broadcast_senders(client_data[16:])
+                
+                elif(client_data.startswith("CMD|") or client_data.startswith("KEY|")):
+                    broadcast_receivers(client_data)
 
         except Exception as e:
             print(str(e))
@@ -38,9 +38,13 @@ async def hello(websocket, path):
                 receivers.remove(websocket)
 
 
-async def broadcast_key(key):
+async def broadcast_receivers(data):
     for client in receivers:       
-        await client.send(key)
+        await client.send(data)
+
+async def broadcast_senders(data):
+    for client in senders:       
+        await client.send(data)
             
         
 
