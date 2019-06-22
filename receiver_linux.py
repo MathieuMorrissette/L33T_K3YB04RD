@@ -7,9 +7,17 @@ import socket
 import time
 import subprocess
 import pyscreenshot
+import base64
+from io import BytesIO
 
 # looks the first write doesn't work unless we call a function on the module.
 keyboard.is_pressed("e")
+
+def im_2_b64(image):
+    buff = BytesIO()
+    image.save(buff, format="JPEG")
+    img_str = base64.b64encode(buff.getvalue())
+    return img_str
 
 async def main():
     async with websockets.connect('ws://192.168.4.148:8766') as websocket:
@@ -28,7 +36,8 @@ async def main():
 
             if(server.startswith("SCREEN|")):
                 im = pyscreenshot.grab()
-                await websocket.send("SCREEN|" + im)
+                im.show()
+                await websocket.send("RECEIVER_OUTPUT|" + str(im_2_b64(im))
 
 
             print("writing : " + server)
