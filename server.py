@@ -41,16 +41,14 @@ async def hello(websocket, path):
                 receivers.remove(websocket)
 
 
-
-
 async def broadcast_key(key):
     for client in receivers:       
         await client.send(key)
             
         
 
-
-start_server = websockets.serve(hello, '192.168.4.148', 8766)
+# ping_interval None -> disables timeout
+start_server = websockets.serve(hello, '192.168.4.148', 8766, ping_timeout=0)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
