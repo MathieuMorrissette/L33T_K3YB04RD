@@ -1,21 +1,26 @@
 import asyncio
 import websockets
-
+import time
 # remember sockets or else they get trashed by the GC
 receivers = []
 senders = []
 
 async def hello(websocket, path):
-    while(True):
         print("waiting to receive clients")
         client_data = await websocket.recv()
 
         if(client_data == "CONNECT_RECEIVER"):
             receivers.append(websocket)
+
         elif(client_data == "CONNECT_SENDER"):
             senders.append(websocket)
-        elif(client_data.startswith("KEY|")):
-            await broadcast_key(client_data[4:])
+
+        while True:
+            client_data = await websocket.recv()
+            
+            if(client_data.startswith("KEY|")):
+                await broadcast_key(client_data[4:])
+
 
 
 
