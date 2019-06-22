@@ -9,17 +9,28 @@ async def hello(websocket, path):
         print("waiting to receive clients")
         client_data = await websocket.recv()
 
+        is_sender = False
         if(client_data == "CONNECT_RECEIVER"):
             receivers.append(websocket)
 
         elif(client_data == "CONNECT_SENDER"):
+            is_sender = True
             senders.append(websocket)
+        try:
+            while True:
+                client_data = await websocket.recv()
+                
+                if(client_data.startswith("KEY|")):
+                    await broadcast_key(client_data[4:])
 
-        while True:
-            client_data = await websocket.recv()
-            
-            if(client_data.startswith("KEY|")):
-                await broadcast_key(client_data[4:])
+        except Exception as e:
+            print(str(e))
+
+        finally:
+            if(is_sender):
+                senders.remove(websocket)
+            else:
+                receivers.remove(websocket)
 
 
 
