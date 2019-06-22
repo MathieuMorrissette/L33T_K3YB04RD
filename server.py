@@ -23,10 +23,11 @@ async def hello(websocket, path):
                 print("received data : " + client_data)
 
                 if(client_data.startswith("RECEIVER_OUTPUT|")):
-                    broadcast_senders(client_data[16:])
+                    await broadcast_senders(client_data[16:])
+                    continue
                 
-                elif(client_data.startswith("CMD|") or client_data.startswith("KEY|")):
-                    broadcast_receivers(client_data)
+                else:
+                    await broadcast_receivers(client_data)
 
         except Exception as e:
             print(str(e))

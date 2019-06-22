@@ -13,7 +13,7 @@ async def hello():
             await websocket.send(data_to_send)
             
             if(data_to_send.startswith("CMD|")):
-                await websocket.recv()
+                print(await websocket.recv())
             
 
 asyncio.get_event_loop().run_until_complete(hello())

