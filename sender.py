@@ -30,8 +30,8 @@ async def hello():
                 # freeze until transfer done
                 await websocket.recv()
 
-            if(server.startswith("GET|")):
-                split = server.split("|")
+            if(data_to_send.startswith("GET|")):
+                split = data_to_send.split("|")
 
                 source = split[1]
                 destination = split[2]
