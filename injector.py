@@ -96,11 +96,12 @@ async def main():
 
                             f = open(source, "rb")
                             data = base64.b64encode(f.read()).decode("utf-8")
-                            await websocket.send("PUT|" + data)
+                            await websocket.send("RECEIVER_OUTPUT|" + data)
                         except:
                             print("fail")
 
-        except:
+        except Exception as e:
+            print(e)
             print("crash reconnecting")
 
 asyncio.get_event_loop().run_until_complete(main())

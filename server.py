@@ -50,7 +50,8 @@ async def broadcast_senders(data):
         
 
 # ping_interval None -> disables timeout
-start_server = websockets.serve(hello, '192.168.4.148', 8766, ping_interval=None)
+# max_size=None -> disable frame size limit
+start_server = websockets.serve(hello, '192.168.4.148', 8766, ping_interval=None,max_size=None)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
