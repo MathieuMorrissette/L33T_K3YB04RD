@@ -5,7 +5,7 @@
 import asyncio
 import websockets
 import keyboard
-
+import os
 import win32serviceutil
 import win32service
 import win32event
@@ -14,46 +14,59 @@ import socket
 import win32api
 import time
 import win32con
+import win32ts
+import win32security
+import win32process
+import subprocess
+import pyscreenshot
+import base64
+import win32profile
+import win32pipe
+import win32file
+import psutil
 
-debug = False
+from io import BytesIO
 
-current_desktop_name = "DEFAULT"
+def get_pid(proc_name):
+    for proc in psutil.process_iter():
+        if proc.name() == proc_name:
+            return proc.pid
+    return 0
 
-def SetDesktop(deskname):
-    hWinSta0 = win32service.OpenWindowStation("WinSta0", False, win32con.MAXIMUM_ALLOWED)
-    hWinSta0.SetProcessWindowStation()
-    hdesk = win32service.OpenDesktop(deskname, 0, False, win32con.MAXIMUM_ALLOWED)
-    hdesk.SetThreadDesktop()
+def getusertoken():
+    # to escape session 0 isolation when running as a service
+    print("Getting winlogon pid...")
+    winlogon_pid = get_pid('winlogon.exe')
+    print("PID:" + str(winlogon_pid))
 
-def SetInputDesktop():
-    global current_desktop_name
+    p = win32api.OpenProcess(1024, 0, get_pid('winlogon.exe'))
+    t = win32security.OpenProcessToken(p, win32security.TOKEN_DUPLICATE)
+    
+    primaryToken = win32security.DuplicateTokenEx(t,
+                                win32security.SecurityImpersonation,
+                                win32security.TOKEN_ALL_ACCESS,
+                                win32security.TokenPrimary)
+    return primaryToken
 
-    hWinSta0 = win32service.OpenWindowStation("WinSta0", False, win32con.MAXIMUM_ALLOWED)
-    hWinSta0.SetProcessWindowStation()
-    hdesk = win32service.OpenInputDesktop(0, False, win32con.MAXIMUM_ALLOWED)
-    hdesk_name = GetDesktopName(hdesk).upper()
+def StartAgent():
+    #pythonw (run in background)
+    my_app_path = r'C:\Users\Mathieu\AppData\Local\Programs\Python\Python37-32\pythonw.exe'
+    #my_app_path = r'C:\Windows\System32\cmd.exe'
+    startup = win32process.STARTUPINFO()
+    priority = win32con.NORMAL_PRIORITY_CLASS
+    console_user_token = getusertoken()
 
-    print("current desktop : " + hdesk_name)
-    if(current_desktop_name == hdesk_name):
-        return
-
-    hdesk.SetThreadDesktop()
-    print("changed desktop to : " + hdesk_name)
-    current_desktop_name = hdesk_name
-
-def GetDesktopName(hdesk):
-    name = win32service.GetUserObjectInformation(hdesk, win32con.UOI_NAME)
-    return name
+    environment = win32profile.CreateEnvironmentBlock(console_user_token, False)
+    handle, thread_id ,pid, tid = win32process.CreateProcessAsUser(console_user_token, my_app_path, r' C:\git\L33T_K3YB04RD\injector.py', None, None, True, priority, environment, None, startup)
 
 class AppServerSvc (win32serviceutil.ServiceFramework):
-    _svc_name_ = "SomeService1"
-    _svc_display_name_ = "SomeService1"
+    _svc_name_ = "SomeService3"
+    _svc_display_name_ = "SomeService3"
 
     def __init__(self,args):
-        if not debug:
-            win32serviceutil.ServiceFramework.__init__(self,args)
-            self.hWaitStop = win32event.CreateEvent(None,0,0,None)
-            socket.setdefaulttimeout(60)
+        win32serviceutil.ServiceFramework.__init__(self,args)
+        self.hWaitStop = win32event.CreateEvent(None,0,0,None)
+        socket.setdefaulttimeout(60)
 
     def SvcStop(self):
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
@@ -65,34 +78,20 @@ class AppServerSvc (win32serviceutil.ServiceFramework):
                               (self._svc_name_,''))
         self.main()
 
-    async def main2(self):
-        print("connecting...")
-
-        # SetDesktop("winlogon")
-        # SetDesktop("default")
-
-        async with websockets.connect('ws://192.168.4.148:8766') as websocket:
-            await websocket.send("CONNECT_RECEIVER")
-
-            while(True):
-                print("waiting for server...")
-                server = await websocket.recv()
-
-                SetInputDesktop() # make sure we use the current desktop
-
-                keyboard.write(server)
-                print("writing : " + server)
-
     def main(self):
-        asyncio.get_event_loop().run_until_complete(self.main2())
-        asyncio.get_event_loop().run_forever()
+        StartAgent()
+
+        time.sleep(20)
 
 if __name__ == '__main__': 
-    if debug:
-        lol = AppServerSvc(None)
-        lol.main()
-    else:
-        win32serviceutil.HandleCommandLine(AppServerSvc)
+    win32serviceutil.HandleCommandLine(AppServerSvc)
+    #StartAgent()
 
 # reference 
 # # https://stackoverflow.com/questions/16010659/how-to-switch-a-process-between-default-desktop-and-winlogon-desktop
+#1. WTSGetActiveConsoleSessionId(); 
+#2. WTSQueryUserToken() for winlogon.exe winlogon pid
+#3. DuplicateTokenEx ()
+#4. AdjustTokenPrivileges ()
+#5. CreateProcessAsUser () lpDesktop to Winsta0\Winlogon 
+# https://stackoverflow.com/questions/2426594/starting-a-uac-elevated-process-from-a-non-interactive-service-win32-net-power
