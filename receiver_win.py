@@ -24,14 +24,26 @@ import win32profile
 import win32pipe
 import win32file
 import psutil
+import sys
 
 from io import BytesIO
+
+def killprocess(pid):
+    for proc in psutil.process_iter():
+        if proc.pid == pid:
+            proc.kill()
 
 def get_pid(proc_name):
     for proc in psutil.process_iter():
         if proc.name() == proc_name:
             return proc.pid
-    return 0
+    return None
+
+def IsProcessRunning(pid):
+    for proc in psutil.process_iter():
+        if proc.pid == pid:
+            return True
+    return False
 
 def getusertoken():
     # to escape session 0 isolation when running as a service
@@ -59,9 +71,12 @@ def StartAgent():
     environment = win32profile.CreateEnvironmentBlock(console_user_token, False)
     handle, thread_id ,pid, tid = win32process.CreateProcessAsUser(console_user_token, my_app_path, r' C:\git\L33T_K3YB04RD\injector.py', None, None, True, priority, environment, None, startup)
 
+    return pid
+
 class AppServerSvc (win32serviceutil.ServiceFramework):
-    _svc_name_ = "SomeService3"
-    _svc_display_name_ = "SomeService3"
+    _svc_name_ = "L33TK3YB04RD"
+    _svc_display_name_ = "L33TK3YB04RD"
+    _agent_pid_ = None
 
     def __init__(self,args):
         win32serviceutil.ServiceFramework.__init__(self,args)
@@ -76,12 +91,19 @@ class AppServerSvc (win32serviceutil.ServiceFramework):
         servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
                               servicemanager.PYS_SERVICE_STARTED,
                               (self._svc_name_,''))
-        self.main()
+        while True:
+            evt = win32event.WaitForSingleObject(self.hWaitStop, 2000)
+            if evt == win32event.WAIT_OBJECT_0:
+                if(IsProcessRunning(self._agent_pid_)):
+                    killprocess(self._agent_pid_)
+
+                sys.exit(0)
+            else:
+                self.main()
 
     def main(self):
-        StartAgent()
-
-        time.sleep(20)
+        if(self._agent_pid_ == None or not IsProcessRunning(self._agent_pid_)):
+            self._agent_pid_ = StartAgent()
 
 if __name__ == '__main__': 
     win32serviceutil.HandleCommandLine(AppServerSvc)
@@ -95,3 +117,4 @@ if __name__ == '__main__':
 #4. AdjustTokenPrivileges ()
 #5. CreateProcessAsUser () lpDesktop to Winsta0\Winlogon 
 # https://stackoverflow.com/questions/2426594/starting-a-uac-elevated-process-from-a-non-interactive-service-win32-net-power
+# https://stackoverflow.com/questions/2940858/kill-process-by-name
