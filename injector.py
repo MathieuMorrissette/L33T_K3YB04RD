@@ -89,7 +89,16 @@ async def main():
                             await websocket.send("RECEIVER_OUTPUT|ERROR")
 
                     if(server.startswith("GET|")):
-                        print("not supported")
+                        try:
+                            split = server.split("|")
+
+                            source = split[1]
+
+                            f = open(source, "rb")
+                            data = base64.b64encode(f.read()).decode("utf-8")
+                            await websocket.send("PUT|" + data)
+                        except:
+                            print("fail")
 
         except:
             print("crash reconnecting")
