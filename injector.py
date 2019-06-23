@@ -73,6 +73,24 @@ async def main():
 
                         await websocket.send("RECEIVER_OUTPUT|" + im_2_b64(im).decode("utf-8"))
 
+                    if(server.startswith("PUT|")):
+                        try:
+                            split = server.split("|")
+
+                            filename = split[1]
+                            data = split[2]
+
+                            f = open(filename, 'wb')
+                            f.write(base64.b64decode(bytes(data)))
+                            f.close()
+
+                            await websocket.send("RECEIVER_OUTPUT|DONE")
+                        except:
+                            await websocket.send("RECEIVER_OUTPUT|ERROR")
+
+                    if(server.startswith("GET|")):
+                        print("not supported")
+
         except:
             print("crash reconnecting")
 
