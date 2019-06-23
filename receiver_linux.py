@@ -20,7 +20,7 @@ def im_2_b64(image):
     return img_str
 
 async def main():
-    async with websockets.connect('ws://192.168.4.148:8766') as websocket:
+    async with websockets.connect('ws://192.168.4.148:8766', max_size=None) as websocket:
         await websocket.send("CONNECT_RECEIVER")
 
         while(True):
