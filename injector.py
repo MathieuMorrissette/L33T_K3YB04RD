@@ -81,7 +81,7 @@ async def main():
                             data = split[2]
 
                             f = open(filename, 'wb')
-                            f.write(base64.b64decode(bytes(data)))
+                            f.write(base64.b64decode(data.encode("utf-8")))
                             f.close()
 
                             await websocket.send("RECEIVER_OUTPUT|DONE")

@@ -24,7 +24,7 @@ async def hello():
                 destination = split[2]
 
                 f = open(source, "rb")
-                data = base64.b64encode(f.read())
+                data = base64.b64encode(f.read()).decode("utf-8")
                 await websocket.send("PUT|" + destination + "|" + data)
 
                 # freeze until transfer done
@@ -36,7 +36,7 @@ async def hello():
 
             if(data_to_send.startswith("SCREEN|")):
                 await websocket.send(data_to_send)
-                img = b64_2_img(bytes(await websocket.recv()))
+                img = b64_2_img((await websocket.recv()).encode("utf-8"))
                 img.show()
             
 
