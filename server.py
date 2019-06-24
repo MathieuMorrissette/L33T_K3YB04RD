@@ -27,13 +27,13 @@ async def hello(websocket, path):
         elif(client_data.startswith("CONNECT_SENDER")):
             is_sender = True
 
-            client_pass = hashlib.sha256(client_data.split("|")[1])
+            client_pass = hashlib.sha256(client_data.split("|")[1].encode("utf-8"))
             print(client_pass)
             while(client_pass != password):
                 await websocket.send("DENIED")
 
                 client_data = await websocket.recv()
-                client_pass = hashlib.sha256(client_data.split("|")[1])
+                client_pass = hashlib.sha256(client_data.split("|")[1].encode("utf-8"))
 
             await websocket.send("SUCCESS")
 
