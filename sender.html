@@ -17,15 +17,21 @@
 <body>
 	<div class="container">
 		<div class="row">
-			<div class="col-6">
+			<div class="col-12">
+				<input type="text" class="form-control" id="server" value="localhost:8766" placeholder="Server">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">
 				<div class="input-group mb-3">
 					<input type="password" class="form-control" id="password" placeholder="Server Password">
 					<div class="input-group-append">
-						<button class="btn btn-outline-secondary" onclick=start() type="button">Button</button>
+						<button class="btn btn-outline-secondary" onclick=start() type="button">Connect</button>
 					</div>
 				</div>
 			</div>
 		</div>
+
 		<div class="row">
 				<div class="col-4">
 						<button type="button" onclick="sendkey('é')" class="btn btn-primary btn-lg btn-block">é</button>
@@ -48,9 +54,11 @@
 				<div class="col-4">
 						<button type="button" onclick="sendkey('œ')"class="btn btn-primary btn-lg btn-block">œ</button>
 				</div>
-				<div class="col-4">
-						<button id="shift" type="button" data-toggle="button" class="btn btn-primary btn-lg btn-block">SHIFT</button>
-				</div>
+		</div>
+		<div class="row mt-1">
+			<div class="col-4">
+					<button id="shift" type="button" data-toggle="button" class="btn btn-primary btn-lg btn-block">SHIFT</button>
+			</div>
 		</div>
 		<div class="row" id="status">
 			Disconnected <br>
@@ -69,9 +77,7 @@
 
 		status("Connecting")
 
-
-
-		url = "ws://localhost:8766"
+		url = "ws://" + document.getElementById("server").value
 
 		webSocket = new WebSocket(url);
 
