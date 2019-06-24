@@ -1,9 +1,20 @@
 import asyncio
 import websockets
 import time
+import sys
+import hashlib
+
 # remember sockets or else they get trashed by the GC
 receivers = []
 senders = []
+
+password = None
+
+try:
+    with open("password.cfg", "r") as f:
+        password = f.read()
+except:
+    sys.exit(0)
 
 async def hello(websocket, path):
         print("waiting to receive clients")
@@ -13,8 +24,19 @@ async def hello(websocket, path):
         if(client_data == "CONNECT_RECEIVER"):
             receivers.append(websocket)
 
-        elif(client_data == "CONNECT_SENDER"):
+        elif(client_data.startswith("CONNECT_SENDER")):
             is_sender = True
+
+            client_pass = hashlib.sha256(client_data.split("|")[1])
+            print(client_pass)
+            while(client_pass != password):
+                await websocket.send("DENIED")
+
+                client_data = await websocket.recv()
+                client_pass = hashlib.sha256(client_data.split("|")[1])
+
+            await websocket.send("SUCCESS")
+
             senders.append(websocket)
         try:
             while True:

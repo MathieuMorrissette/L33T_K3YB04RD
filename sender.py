@@ -13,7 +13,16 @@ def b64_2_img(data):
 async def hello():
     async with websockets.connect('ws://192.168.4.148:8766', max_size=None) as websocket:
 
-        await websocket.send("CONNECT_SENDER")
+        authenticated = False
+
+        while not authenticated:
+            password = input("Password >")
+            
+            await websocket.send("CONNECT_SENDER|" + password)
+            
+            if(await websocket.recv() == "SUCCESS"):
+                authenticated = True
+
 
         while(True):
             data_to_send = input("> ")
