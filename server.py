@@ -28,8 +28,8 @@ async def hello(websocket, path):
             is_sender = True
 
             client_pass = hashlib.sha256(client_data.split("|")[1].encode("utf-8"))
-            print(client_pass)
-            while(client_pass != password):
+            print(client_pass.hexdigest())
+            while(client_pass.hexdigest() != password):
                 await websocket.send("DENIED")
 
                 client_data = await websocket.recv()
