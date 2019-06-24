@@ -28,7 +28,7 @@ async def hello(websocket, path):
             is_sender = True
 
             client_pass = hashlib.sha256(client_data.split("|")[1].encode("utf-8"))
-            
+
             while(client_pass.hexdigest() != password):
                 await websocket.send("DENIED")
 
@@ -73,7 +73,7 @@ async def broadcast_senders(data):
 
 # ping_interval None -> disables timeout
 # max_size=None -> disable frame size limit
-start_server = websockets.serve(hello, '192.168.1.66', 8766, ping_interval=None,max_size=None)
+start_server = websockets.serve(hello, 'localhost', 8766, ping_interval=None,max_size=None)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

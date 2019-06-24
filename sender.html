@@ -1,0 +1,159 @@
+<html>
+
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+		integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<style>
+.btn:focus,.btn:active 
+{
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}
+</style>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-6">
+				<div class="input-group mb-3">
+					<input type="password" class="form-control" id="password" placeholder="Server Password">
+					<div class="input-group-append">
+						<button class="btn btn-outline-secondary" onclick=start() type="button">Button</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+				<div class="col-4">
+						<button type="button" onclick="sendkey('é')" class="btn btn-primary btn-lg btn-block">é</button>
+				</div>
+				<div class="col-4">
+						<button type="button" onclick="sendkey('ê')" class="btn btn-primary btn-lg btn-block">ê</button>
+				</div>
+				<div class="col-4">
+						<button type="button" onclick="sendkey('û')" class="btn btn-primary btn-lg btn-block">û</button>
+				</div>
+
+		</div>
+		<div class="row mt-1">
+				<div class="col-4">
+						<button type="button" onclick="sendkey('ù')"class="btn btn-primary btn-lg btn-block">ù</button>
+				</div>
+				<div class="col-4">
+						<button type="button" onclick="sendkey('à')"class="btn btn-primary btn-lg btn-block">à</button>
+				</div>
+				<div class="col-4">
+						<button type="button" onclick="sendkey('œ')"class="btn btn-primary btn-lg btn-block">œ</button>
+				</div>
+				<div class="col-4">
+						<button id="shift" type="button" data-toggle="button" class="btn btn-primary btn-lg btn-block">SHIFT</button>
+				</div>
+		</div>
+		<div class="row" id="status">
+			Disconnected <br>
+		</div>
+	</div>
+
+</body>
+<script>
+	webSocket = null
+	ready = false
+	authenticated = false
+
+	function start() {
+		status_elem = document.getElementById("status")
+		status_elem.innerHTML = ""
+
+		status("Connecting")
+
+
+
+		url = "ws://localhost:8766"
+
+		webSocket = new WebSocket(url);
+
+		webSocket.onopen = function(evt) 
+		{ 
+			ready = true 
+			status("Connected")
+
+			authenticate(webSocket)
+		};
+
+		webSocket.onmessage = function(evt) 
+		{ 
+			data = evt.data
+			status("Received Data From Server")
+
+			if(!authenticated)
+			{
+				if(data == "DENIED")
+				{
+					status("Wrong Password")
+					webSocket.close()
+					return
+				}
+
+				status("Success")
+				authenticated = true
+			}
+		};
+
+		webSocket.onclose = function(evt) 
+		{ 
+			ready = false; 
+
+			status("Disconnected")
+			webSocket = null
+			ready = false
+			authenticated = false
+
+			//start(); 
+		};
+	}
+
+	function sendkey(key)
+	{
+		toggled = document.getElementById("shift").classList.contains("active");
+
+		if(authenticated)
+		{
+			if(toggled)
+			{
+				key = key.toUpperCase();
+			}
+
+			webSocket.send("KEY|" + key)
+		}
+	}
+
+	function authenticate(ws)
+	{
+		status("Authenticating")
+
+		password = document.getElementById("password").value;
+
+		ws.send("CONNECT_SENDER|" + password)
+	}
+
+	function status(status)
+	{
+		status_elem = document.getElementById("status")
+		status_elem.innerHTML = status_elem.innerHTML + new Date().toLocaleString() + " | " +  status + "<br>"
+	}
+
+</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+	integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+	crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+	integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+	crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+	integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+	crossorigin="anonymous"></script>
+
+</html>
