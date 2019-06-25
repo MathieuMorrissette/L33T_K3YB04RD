@@ -52,7 +52,7 @@ def SetInputDesktop():
 async def main():
     while True:
         try:
-            async with websockets.connect('ws://localhost:8766', max_size=None) as websocket:
+            async with websockets.connect('ws://mathieumorrissette.com:8080', max_size=None) as websocket:
                 await websocket.send("CONNECT_RECEIVER")
 
                 while(True):
